@@ -1,86 +1,112 @@
 package io.hackaday.raspiaqua.smartapp;
 
+import com.jfoenix.controls.JFXBadge;
+import com.jfoenix.controls.JFXToggleButton;
+import com.jfoenix.controls.JFXTogglePane;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
-import eu.hansolo.tilesfx.Tile;
-import eu.hansolo.tilesfx.TileBuilder;
 import java.util.ResourceBundle;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.Border;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.FlowPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 /**
  *
  * @author svininykh-av
  */
 public class AquaDeviceTile {
-
+    
     private final ResourceBundle bundle;
-    private final double tileWidth;
-    private final double tileHeight;
-
-    private String name;
-    private Tile iconTile;
-    private Tile switchTile;
-
-    private FontAwesomeIconView iconView;
-
-    public AquaDeviceTile(ResourceBundle bundle, double tileWidth, double tileHeight) {
+    private final double size;
+    
+    private String name = "unknown";
+    private FontAwesomeIcon icon = FontAwesomeIcon.POWER_OFF;
+    private Color color = Color.BLUEVIOLET;
+    
+    private FlowPane tile = new FlowPane();
+    
+    public AquaDeviceTile(ResourceBundle bundle, double size) {
         this.bundle = bundle;
-        this.tileWidth = tileWidth;
-        this.tileHeight = tileHeight;
+        this.size = size;
     }
-
+    
     public String getName() {
         return name;
     }
-
+    
     public void setName(String name) {
         this.name = name;
     }
-
-    public Tile getIconTile() {
-        return iconTile;
+    
+    public FontAwesomeIcon getIcon() {
+        return icon;
     }
-
-    public void setIconTile(FontAwesomeIcon icon) {
-        iconView = new FontAwesomeIconView();
+    
+    public void setIcon(FontAwesomeIcon icon) {
+        this.icon = icon;
+    }
+    
+    public Color getColor() {
+        return color;
+    }
+    
+    public void setColor(Color color) {
+        this.color = color;
+    }
+    
+    public FlowPane getTile() {
+        FontAwesomeIconView iconView = new FontAwesomeIconView();
         iconView.setIcon(icon);
-        iconView.setFill(Tile.FOREGROUND);
-        iconView.setSize("64");
-        this.iconTile = TileBuilder.create()
-                .prefSize(tileWidth, tileHeight)
-                .skinType(Tile.SkinType.CUSTOM)
-                .title(String.format("%s %s", bundle.getString("key.".concat(name)), bundle.getString("key.off")))
-                .graphic(iconView)
-                .roundedCorners(false)
-                .build();
-    }
-
-    public Tile getSwitchTile() {
-        switchTile = TileBuilder.create()
-                .skinType(Tile.SkinType.SWITCH)
-                .prefSize(tileWidth, tileHeight)
-                .title(bundle.getString("key.".concat(name)))
-                .build();
-        switchTile.setOnSwitchReleased((SwitchEvent) -> {
-            if (switchTile.isActive()) {
-                iconView.setFill(Tile.YELLOW_ORANGE);
-                iconTile.setTitleColor(Tile.YELLOW_ORANGE);
-                iconTile.setTitle(String.format("%s %s", bundle.getString("key.".concat(name)), bundle.getString("key.on")));
+        iconView.setSize("32");
+        StackPane stack = new StackPane(iconView);
+        stack.setPadding(new Insets(4));
+        stack.setPrefSize(size, size);
+        JFXBadge badge = new JFXBadge(stack);
+        badge.setText(bundle.getString("key.off"));
+        badge.setBorder(Border.EMPTY);
+        badge.setPadding(new Insets(2));
+        JFXToggleButton button = new JFXToggleButton();
+        button.toggleColorProperty().set(color);
+        button.setOnAction((SwitchEvent) -> {
+            if (button.isSelected()) {
+                badge.setText(bundle.getString("key.on"));
+                badge.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
             } else {
-                iconView.setFill(Tile.FOREGROUND);
-                iconTile.setTitleColor(Tile.FOREGROUND);
-                iconTile.setTitle(String.format("%s %s", bundle.getString("key.".concat(name)), bundle.getString("key.off")));
+                badge.setText(bundle.getString("key.off"));
+                badge.setBackground(new Background(new BackgroundFill(Color.TRANSPARENT, CornerRadii.EMPTY, Insets.EMPTY)));
             }
         });
-        return switchTile;
+        JFXTogglePane toggle = new JFXTogglePane();
+        toggle.setPrefSize(size, size);
+        toggle.getChildren().add(button);
+        
+        Text text = new Text(bundle.getString("key.".concat(name)));
+        text.setFont(new Font(10));
+        
+        tile = new FlowPane(badge, toggle, text);
+        tile.setAlignment(Pos.CENTER);
+        tile.setPrefSize(size, size * 2);
+        
+        return tile;
     }
-
-    public void setSwitchTile(Tile switchTile) {
-        this.switchTile = switchTile;
+    
+    public void setTile(String name, FontAwesomeIcon icon, Color color) {
+        this.name = name;
+        this.icon = icon;
+        this.color = color;
     }
-
+    
     @Override
     public String toString() {
         return name;
     }
-
+    
 }
