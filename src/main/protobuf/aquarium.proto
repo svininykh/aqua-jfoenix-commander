@@ -21,6 +21,7 @@ message AquaDevice {
             ON = 1;
         }
         required Status status = 1;
+        optional uint32 duration = 2;
     }
 
     required Equipment equipment_type = 1;

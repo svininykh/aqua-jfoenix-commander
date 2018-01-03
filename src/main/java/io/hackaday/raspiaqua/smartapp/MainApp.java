@@ -1,13 +1,22 @@
 package io.hackaday.raspiaqua.smartapp;
 
+import com.google.protobuf.CodedInputStream;
+import com.google.protobuf.CodedOutputStream;
 import com.jfoenix.controls.JFXMasonryPane;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import io.hackaday.raspiaqua.proto.Aquarium.MessagePacket;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.Socket;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.slf4j.LoggerFactory;
 
 public class MainApp extends Application {
 
@@ -19,8 +28,37 @@ public class MainApp extends Application {
     private final AquaDeviceTile heater = new AquaDeviceTile(bundle, TILE_SIZE);
     private final AquaDeviceTile filter = new AquaDeviceTile(bundle, TILE_SIZE);
 
+    Socket pbSocket = null;
+
+    org.slf4j.Logger logger = LoggerFactory.getLogger(MainApp.class);
+
+    MessagePacket messageResponse;
+    MessagePacket messageRequest;
+
     @Override
     public void init() {
+        try {
+            pbSocket = new Socket("localhost", 8997);
+            pbSocket.setSoTimeout(1000);
+            messageRequest = MessagePacket.newBuilder()
+                    .setServerName("localhost")
+                    .setClientName(InetAddress.getLocalHost().getHostName())
+                    .build();
+            logger.debug("Size: {} Request:\n{}", messageRequest.getSerializedSize(), messageRequest.toString());
+            try {
+                CodedOutputStream pbOutputStream = CodedOutputStream.newInstance(pbSocket.getOutputStream());
+                pbOutputStream.writeMessageNoTag(messageRequest);
+                pbOutputStream.flush();
+                CodedInputStream pbInputStream = CodedInputStream.newInstance(pbSocket.getInputStream());
+                messageResponse = MessagePacket.parseFrom(pbInputStream.readBytes().toByteArray());
+                logger.debug("Size: {} Response:\n{}", messageResponse.getSerializedSize(), messageResponse.toString());
+            } finally {
+                pbSocket.close();
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(MainApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
         light.setName("light");
         light.setIcon(FontAwesomeIcon.LIGHTBULB_ALT);
         light.setColor(Color.ORANGE);
