@@ -4,7 +4,7 @@
 
     <groupId>io.hackaday.raspiaqua</groupId>
     <artifactId>aqua-jfoenix-commander</artifactId>
-    <version>0.1.0-SNAPSHOT</version>
+    <version>0.2.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>aqua-jfoenix-commander</name>
@@ -13,11 +13,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <mainClass>io.hackaday.raspiaqua.smartapp.MainApp</mainClass>
     </properties>
-
-    <organization>
-        <!-- Used as the 'Vendor' for JNLP generation -->
-        <name>Your Organisation</name>
-    </organization>
 
     <build>
         <plugins>
